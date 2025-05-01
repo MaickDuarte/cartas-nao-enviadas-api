@@ -20,7 +20,7 @@ const postCarta = async (req, res) => {
 };
 
 // GET
-const getCarta = async (req, res) => {
+const getCartaPorId = async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -38,4 +38,28 @@ const getCarta = async (req, res) => {
   }
 };
 
-module.exports = { postCarta, getCarta };
+const getCartasPorAutor = async (req, res) => {
+  const { autor } = req.query;
+
+  if (!autor) {
+    return res.status(400).json({ error: 'O parâmetro "autor" é obrigatório' });
+  }
+
+  try {
+    const snapshot = await db.collection('cartas')
+      .where('autor', '==', autor)
+      .get();
+
+    const cartas = [];
+    snapshot.forEach(doc => {
+      cartas.push({ id: doc.id, ...doc.data() });
+    });
+
+    res.status(200).json(cartas);
+  } catch (error) {
+    console.error('Erro ao buscar cartas por autor:', error);
+    res.status(500).json({ error: 'Erro ao buscar cartas por autor' });
+  }
+};
+
+module.exports = { postCarta, getCartaPorId, getCartasPorAutor };
